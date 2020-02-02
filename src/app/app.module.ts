@@ -6,13 +6,14 @@ import { AgmCoreModule } from "@agm/core";
 import { FormsModule } from "@angular/forms";
 import { AppComponent } from "./app.component";
 
+
 @NgModule({
   declarations: [AppComponent],
   imports: [
     BrowserModule,
-    AgmCoreModule.forRoot({
-      apiKey: "AIzaSyDSLDVsHbuo6EfXHHDILYs9OA_d8Q046vE"
-    }),
+    // AgmCoreModule.forRoot({
+    //   apiKey:"AIzaSyDSLDVsHbuo6EfXHHDILYs9OA_d8Q046vE"
+    // }),
     FormsModule,
     AppRoutingModule
   ],

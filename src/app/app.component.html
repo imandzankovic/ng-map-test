@@ -1,109 +1,80 @@
+<style>
+  /* Always set the map height explicitly to define the size of the div
+   * element that contains the map. */
+   #map {
+      height: 500px;
+    }
+
+</style>
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
   <a class="navbar-brand" href="#">Navbar</a>
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
+  <button
+    class="navbar-toggler"
+    type="button"
+    data-toggle="collapse"
+    data-target="#navbarColor01"
+    aria-controls="navbarColor01"
+    aria-expanded="false"
+    aria-label="Toggle navigation"
+  >
     <span class="navbar-toggler-icon"></span>
   </button>
 
   <div class="collapse navbar-collapse" id="navbarColor01">
     <ul class="navbar-nav mr-auto">
       <li class="nav-item active">
-        <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+        <a class="nav-link" href="#"
+          >Home <span class="sr-only">(current)</span></a
+        >
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="#">Features</a>
+        <a class="nav-link" [routerLink]="'/maps'">Maps</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="#">Pricing</a>
+        <a class="nav-link" [routerLink]="'/all'">All</a>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="#">About</a>
       </li>
     </ul>
     <form class="form-inline my-2 my-lg-0">
-      <input class="form-control mr-sm-2" type="text" placeholder="Search">
-      <button class="btn btn-secondary my-2 my-sm-0" type="submit">Search</button>
+      <input class="form-control mr-sm-2" type="text" placeholder="Search" />
+      <button class="btn btn-secondary my-2 my-sm-0" type="submit">
+        Search
+      </button>
     </form>
   </div>
 </nav>
 
-<br><br>
+<br /><br />
 <div class="container">
-<div class="row">
-<div class="col-md-12">
-  <div class="map">
-    <agm-map 
-  [latitude]="lat"
-  [longitude]="lng"
-  [zoom]="zoom" 
-  [disableDefaultUI]="false"
-  [zoomControl]="true"
-  (mapClick)="mapClicked($event)">
-
-  <agm-marker 
-      *ngFor="let m of markers; let i = index"
-      (markerClick)="clickedMarker(m.label, i)"
-      [latitude]="m.lat"
-      [longitude]="m.lng"
-      [label]="m.label"
-      [markerDraggable]="m.draggable"
-      (dragEnd)="markerDragEnd(m, $event)">
-      
-    <agm-info-window>
-      <strong>{{m.name}}</strong>
-      <br>
-      <a class="delete" (click)="removeMarker(m)"> Delete </a>
-    </agm-info-window>
-    
-  </agm-marker>
-  
-  <agm-circle [latitude]="lat + 0.3" [longitude]="lng" 
-      [radius]="5000"
-      [fillColor]="'red'"
-      [circleDraggable]="true"
-      [editable]="true">
-  </agm-circle>
-
-</agm-map>
-  </div>
-</div>
-</div>
-
-<div class="row">
-<div class="col-md-12">
-
-  <div class="panel panel-default">
-    <div class="panel heading">
-
-<h3 class="panel-title">Simple form</h3>
+  <div class="row">
+    <div class="col-md-12">
+      <div id="map"></div>
     </div>
-    <div class="panel-body">
-      <form (submit)="addMarker()">
-        <!-- <label>Location Name</label>
-        <input type="text" [(ngModel)]="markerName" name="markerName">
+  </div>
 
-        <label>Latitude</label>
-        <input type="text" [(ngModel)]="markerLat" name="markerLat">
-
-        <label>Longitude</label>
-        <input type="text" [(ngModel)]="markerLng" name="markerLng">
-
-        <label>Draggable</label>
-        <select [(ngModel)]="markerDraggable" name="markerDraggable">
-
-          <option value="no">No</option>
-          <option value="yes">Yes</option>
-          </select>
-
-          <input type="submit" value="Map it!"> -->
-       
-          <input type="file" style="display: inline-block;" (change)="incomingfile($event)" placeholder="Upload file" accept=".xlsx">
-<button type="button" class="btn btn-info" (click)="Upload()" >Upload</button>
-      </form>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="panel panel-default">
+        <div class="panel heading">
+          <h3 class="panel-title">Simple form</h3>
+        </div>
+        <div class="panel-body">
+          <form>
+            <input
+              type="file"
+              style="display: inline-block;"
+              (change)="incomingfile($event)"
+              placeholder="Upload file"
+              accept=".xlsx"
+            />
+            <button type="button" class="btn btn-info" (click)="Upload()">
+              Upload
+            </button>
+          </form>
+        </div>
+      </div>
     </div>
   </div>
 </div>
-</div>
-
-</div>
-
-

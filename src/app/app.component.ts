@@ -2,6 +2,7 @@ import { Component } from "@angular/core";
 import { MouseEvent } from "@agm/core";
 import { MarkerService } from "./services/marker.service";
 import * as XLSX from "xlsx";
+declare var google: any;
 
 @Component({
   selector: "app-root",
@@ -10,6 +11,7 @@ import * as XLSX from "xlsx";
   providers: [MarkerService]
 })
 export class AppComponent {
+ 
   title = "mapit";
   // Zoom level
   zoom: number = 10;
@@ -34,67 +36,6 @@ export class AppComponent {
     this.markers = this._markerService.getMarkers();
   }
 
-  mapClicked($event: MouseEvent) {
-    // this.markers.push({
-    //   lat: $event.coords.lat,
-    //   lng: $event.coords.lng,
-    //   draggable: false
-    // });
-    console.log('clicked')
-  }
-
-  markerDragEnd(marker: any, $event: any) {
-    console.log("drag end", marker.label, $event);
-
-    var updMarker = {
-      name: marker.name,
-      lat: parseFloat(marker.lat),
-      lng: parseFloat(marker.lng),
-      draggable: false
-    };
-
-    var newLat = $event.coords.lat;
-    var newLng = $event.coords.lng;
-
-    this._markerService.updateMarker(updMarker, newLat, newLng);
-  }
-
-  addMarker() {
-    console.log("adding marker");
-    if (this.markerDraggable == "yes") {
-      var isDraggable = true;
-    } else {
-      var isDraggable = false;
-    }
-
-    var newMarker = {
-      name: this.markerName,
-      lat: parseFloat(this.markerLat),
-      lng: parseFloat(this.markerLng),
-      draggable: isDraggable
-    };
-
-    this.markers.push(newMarker);
-    this._markerService.addMarker(newMarker);
-  }
-
-  removeMarker(marker) {
-    console.log("removing marker...");
-    for (var i = 0; i < this.markers.length; i++) {
-      if (
-        marker.lat == this.markers[i].lat &&
-        marker.lng == this.markers[i].lng
-      ) {
-        this.markers.splice(i, 1);
-      }
-    }
-
-    this._markerService.removeMarker(marker);
-  }
-
-  clickedMarker(label: string, index: number) {
-    console.log(`clicked the marker: ${label || index}`);
-  }
 
   incomingfile(event) {
     this.file = event.target.files[0];
@@ -129,12 +70,17 @@ export class AppComponent {
       this.lat=element.__EMPTY_9;
       this.lng=element.__EMPTY_10;
       this.zoom=12;
-      this.visualizeMarker(element.__EMPTY_9,element.__EMPTY_10);
+     // this.visualizeMarker(element.__EMPTY_9,element.__EMPTY_10);
+
+
+    
+ 
       
-      // var d = {lat: element.__EMPTY_9, lng:element.__EMPTY_10};
-      // this.coordinates.push(d);
-      // console.log('moje')
-      // console.log(this.coordinates);
+      var d = {lat: element.__EMPTY_9, lng:element.__EMPTY_10};
+      this.coordinates.push(d);
+      console.log('moje')
+      console.log(this.coordinates); 
+      this.sve(this.coordinates);
     }
   }
 
@@ -150,9 +96,55 @@ export class AppComponent {
     this._markerService.addMarker(newMarker);
 
   }
+
+  sve(checkboxArray){
+    var directionsService = new google.maps.DirectionsService();
+    var directionsDisplay = new google.maps.DirectionsRenderer();
+    var map = new google.maps.Map(document.getElementById("map"), {
+      zoom: 7,
+      center: { lat: 41.85, lng: -87.65 }
+    });
+    directionsDisplay.setMap(map);
+    calculateAndDisplayRoute(directionsService, directionsDisplay,checkboxArray);
+
+    function calculateAndDisplayRoute(directionsService, directionsDisplay,checkboxArray) {
+      var waypts = [];
+      // var checkboxArray: any[] = [
+      //   { lat: 52.520008, lng: 13.404954 },
+      //   { lat: 50.737431, lng: 7.098207 },
+      //   { lat: 53.551086, lng: 9.993682 }
+      // ];
+      for (var i = 0; i < checkboxArray.length; i++) {
+        waypts.push({
+          location: checkboxArray[i],
+          stopover: true
+        });
+      }
+
+      directionsService.route(
+        {
+          origin: { lat: checkboxArray[0].lat, lng: checkboxArray[0].lng },
+          destination: { lat: checkboxArray[length].lat, lng: checkboxArray[length].lng },
+          waypoints: waypts,
+          optimizeWaypoints: true,
+          travelMode: "DRIVING"
+        },
+        function(response, status) {
+          if (status === "OK") {
+            directionsDisplay.setDirections(response);
+          } else {
+            window.alert("Directions request failed due to " + status);
+          }
+        }
+      );
+    }
+  }
+  
+  ngOnInit() {
+  }
+
 }
 
-// just an interface for type safety.
 interface marker {
   lat: number;
   lng: number;
