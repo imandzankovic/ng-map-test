@@ -34,9 +34,9 @@
     <agm-map 
   [latitude]="lat"
   [longitude]="lng"
-  [zoom]="zoom"
+  [zoom]="zoom" 
   [disableDefaultUI]="false"
-  [zoomControl]="false"
+  [zoomControl]="true"
   (mapClick)="mapClicked($event)">
 
   <agm-marker 
@@ -78,7 +78,7 @@
     </div>
     <div class="panel-body">
       <form (submit)="addMarker()">
-        <label>Location Name</label>
+        <!-- <label>Location Name</label>
         <input type="text" [(ngModel)]="markerName" name="markerName">
 
         <label>Latitude</label>
@@ -94,7 +94,10 @@
           <option value="yes">Yes</option>
           </select>
 
-          <input type="submit" value="Map it!">
+          <input type="submit" value="Map it!"> -->
+       
+          <input type="file" style="display: inline-block;" (change)="incomingfile($event)" placeholder="Upload file" accept=".xlsx">
+<button type="button" class="btn btn-info" (click)="Upload()" >Upload</button>
       </form>
     </div>
   </div>
