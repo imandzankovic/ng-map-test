@@ -5,10 +5,11 @@ import { AppRoutingModule } from "./app-routing.module";
 import { AgmCoreModule } from "@agm/core";
 import { FormsModule } from "@angular/forms";
 import { AppComponent } from "./app.component";
+import { RouteComponent } from './route/route.component';
 
 
 @NgModule({
-  declarations: [AppComponent],
+  declarations: [AppComponent, RouteComponent],
   imports: [
     BrowserModule,
     // AgmCoreModule.forRoot({

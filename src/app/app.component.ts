@@ -72,10 +72,6 @@ export class AppComponent {
       this.zoom=12;
      // this.visualizeMarker(element.__EMPTY_9,element.__EMPTY_10);
 
-
-    
- 
-      
       var d = {lat: element.__EMPTY_9, lng:element.__EMPTY_10};
       this.coordinates.push(d);
       console.log('moje')
@@ -102,7 +98,7 @@ export class AppComponent {
     var directionsDisplay = new google.maps.DirectionsRenderer();
     var map = new google.maps.Map(document.getElementById("map"), {
       zoom: 7,
-      center: { lat: 41.85, lng: -87.65 }
+      center: { lat: checkboxArray[0].lat, lng: checkboxArray[0].lng }
     });
     directionsDisplay.setMap(map);
     calculateAndDisplayRoute(directionsService, directionsDisplay,checkboxArray);
