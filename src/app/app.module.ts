@@ -6,10 +6,11 @@ import { AgmCoreModule } from "@agm/core";
 import { FormsModule } from "@angular/forms";
 import { AppComponent } from "./app.component";
 import { RouteComponent } from './route/route.component';
+import { CmapComponent } from './cmap/cmap.component';
 
 
 @NgModule({
-  declarations: [AppComponent, RouteComponent],
+  declarations: [AppComponent, RouteComponent, CmapComponent],
   imports: [
     BrowserModule,
     // AgmCoreModule.forRoot({

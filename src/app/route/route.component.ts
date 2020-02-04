@@ -90,13 +90,13 @@ export class RouteComponent implements OnInit {
   }
 
   sve(checkboxArray) {
-     let directionsService = new google.maps.DirectionsService();
-     let directionsDisplay = new google.maps.DirectionsRenderer();
+     //let directionsService = new google.maps.DirectionsService();
+     //let directionsDisplay = new google.maps.DirectionsRenderer();
     let map = new google.maps.Map(document.getElementById("map"), {
       zoom: 7,
       center: { lat: checkboxArray[0].lat, lng: checkboxArray[0].lng }
     });
-     directionsDisplay.setMap(map);
+     //directionsDisplay.setMap(map);
     // calculateAndDisplayRoute(directionsService, directionsDisplay,checkboxArray);
 
     // function calculateAndDisplayRoute(directionsService, directionsDisplay,checkboxArray) {
@@ -186,7 +186,7 @@ export class RouteComponent implements OnInit {
       directionsRenderer.setDirections(result);
     }
 
-   // var directionsService = new google.maps.DirectionsService();
+   var directionsService = new google.maps.DirectionsService();
     function requestDirections(start, end) {
       directionsService.route(
         {

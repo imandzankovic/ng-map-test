@@ -1,0 +1,39 @@
+<style>
+    /* Always set the map height explicitly to define the size of the div
+     * element that contains the map. */
+     #map {
+        height: 500px;
+      }
+  
+  </style>
+<div class="container">
+    <div class="row">
+      <div class="col-md-12">
+        <div id="map"></div>
+      </div>
+    </div>
+  
+    <div class="row">
+      <div class="col-md-12">
+        <div class="panel panel-default">
+          <div class="panel heading">
+            <h3 class="panel-title">Simple form</h3>
+          </div>
+          <div class="panel-body">
+            <form>
+              <input
+                type="file"
+                style="display: inline-block;"
+                (change)="incomingfile($event)"
+                placeholder="Upload file"
+                accept=".xlsx"
+              />
+              <button type="button" class="btn btn-info" (click)="Upload()">
+                Upload
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
