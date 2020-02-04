@@ -11,7 +11,6 @@ declare var google: any;
   providers: [MarkerService]
 })
 export class AppComponent {
- 
   title = "mapit";
   // Zoom level
   zoom: number = 10;
@@ -29,13 +28,11 @@ export class AppComponent {
   markers: marker[] = [];
   arrayBuffer: any;
   file: File;
-  coordinates : coordinate[]=[];
-
+  coordinates: coordinate[] = [];
 
   constructor(private _markerService: MarkerService) {
     this.markers = this._markerService.getMarkers();
   }
-
 
   incomingfile(event) {
     this.file = event.target.files[0];
@@ -64,23 +61,26 @@ export class AppComponent {
     for (let index = 1; index < elements.length; index++) {
       const element = elements[index];
       console.log(element);
-      console.log(element.__EMPTY_9)
-      console.log(element.__EMPTY_10)
       
-      this.lat=element.__EMPTY_9;
-      this.lng=element.__EMPTY_10;
-      this.zoom=12;
-     // this.visualizeMarker(element.__EMPTY_9,element.__EMPTY_10);
+      // this.visualizeMarker(element.__EMPTY_9,element.__EMPTY_10);
 
-      var d = {lat: element.__EMPTY_9, lng:element.__EMPTY_10};
+      var d = {
+        customer: element.__EMPTY_3 + ", " + element.__EMPTY_4 + " " + element.__EMPTY_5 + ", " + element.__EMPTY_7 + ", " + element.__EMPTY_8 ,
+        title: element.__EMPTY_11 + " " + element.__EMPTY_12,
+        description: element.__EMPTY_14 + ", " + element.__EMPTY_15,
+        lat: element.__EMPTY_9,
+        lng: element.__EMPTY_10,
+        label:index
+      };
+
       this.coordinates.push(d);
-      console.log('moje')
-      console.log(this.coordinates); 
-      this.sve(this.coordinates);
+      console.log("moje");
+      console.log(this.coordinates);
     }
+    this.sve(this.coordinates);
   }
 
-  visualizeMarker(lat,lng){
+  visualizeMarker(lat, lng) {
     var newMarker = {
       name: this.markerName,
       lat: parseFloat(lat),
@@ -90,55 +90,113 @@ export class AppComponent {
 
     this.markers.push(newMarker);
     this._markerService.addMarker(newMarker);
-
   }
 
-  sve(checkboxArray){
-    var directionsService = new google.maps.DirectionsService();
-    var directionsDisplay = new google.maps.DirectionsRenderer();
-    var map = new google.maps.Map(document.getElementById("map"), {
-      zoom: 7,
-      center: { lat: checkboxArray[0].lat, lng: checkboxArray[0].lng }
+  sve(markers) {
+    var map = null;
+    var infowindow = new google.maps.InfoWindow();
+    var bounds = new google.maps.LatLngBounds();
+
+    var mapOptions = {
+      center: new google.maps.LatLng(
+        parseFloat(markers[0].lat),
+        parseFloat(markers[0].lng)
+      ),
+      zoom: 15,
+      mapTypeId: google.maps.MapTypeId.ROADMAP
+    };
+    var service = new google.maps.DirectionsService();
+
+    var infoWindow = new google.maps.InfoWindow();
+    map = new google.maps.Map(document.getElementById("map"), mapOptions);
+    var lat_lng = new Array();
+
+    var marker = new google.maps.Marker({
+      position: map.getCenter(),
+      map: map,
+      draggable: true
     });
-    directionsDisplay.setMap(map);
-    calculateAndDisplayRoute(directionsService, directionsDisplay,checkboxArray);
+    bounds.extend(marker.getPosition());
+    google.maps.event.addListener(marker, "click", function(evt) {
+      infowindow.setContent("coord:" + marker.getPosition().toUrlValue(6));
+      infowindow.open(map, marker);
+    });
+    for (var i = 0; i < markers.length; i++) {
+      if (i + 1 < markers.length) {
+        var src = new google.maps.LatLng(
+          parseFloat(markers[i].lat),
+          parseFloat(markers[i].lng)
+        );
 
-    function calculateAndDisplayRoute(directionsService, directionsDisplay,checkboxArray) {
-      var waypts = [];
-      // var checkboxArray: any[] = [
-      //   { lat: 52.520008, lng: 13.404954 },
-      //   { lat: 50.737431, lng: 7.098207 },
-      //   { lat: 53.551086, lng: 9.993682 }
-      // ];
-      for (var i = 0; i < checkboxArray.length; i++) {
-        waypts.push({
-          location: checkboxArray[i],
-          stopover: true
-        });
-      }
+        var name=markers[i + 1].title + ' - ' + markers[i + 1].description;
+        var customer = markers[i + 1].customer;
+        createMarker(src,markers[i].label,name,customer);
 
-      directionsService.route(
-        {
-          origin: { lat: checkboxArray[0].lat, lng: checkboxArray[0].lng },
-          destination: { lat: checkboxArray[length].lat, lng: checkboxArray[length].lng },
-          waypoints: waypts,
-          optimizeWaypoints: true,
-          travelMode: "DRIVING"
-        },
-        function(response, status) {
-          if (status === "OK") {
-            directionsDisplay.setDirections(response);
-          } else {
-            window.alert("Directions request failed due to " + status);
+        var des = new google.maps.LatLng(
+          parseFloat(markers[i + 1].lat),
+          parseFloat(markers[i + 1].lng)
+        );
+        var name2=markers[i + 1].title + ' - ' + markers[i + 1].description;
+        var customer2 = markers[i + 1].customer;
+        createMarker(des,markers[i + 1].label, name2, customer2);
+        //  poly.setPath(path);
+        service.route(
+          {
+            origin: src,
+            destination: des,
+            travelMode: google.maps.DirectionsTravelMode.DRIVING
+          },
+          function(result, status) {
+            if (status == google.maps.DirectionsStatus.OK) {
+              var path = new google.maps.MVCArray();
+              var poly = new google.maps.Polyline({
+                map: map,
+                 strokeColor: "#F3443C",
+                 strokeOpacity: 1.0,
+                 strokeWeight: 2,
+              });
+              for (
+                var i = 0, len = result.routes[0].overview_path.length;
+                i < len;
+                i++
+              ) {
+                path.push(result.routes[0].overview_path[i]);
+              }
+              poly.setPath(path);
+              map.fitBounds(bounds);
+            }
           }
-        }
-      );
+        );
+      }
+    }
+
+    function createMarker(latLng,label,description,customer) {
+      console.log('hej ana ana')
+      console.log(description)
+      var marker = new google.maps.Marker({
+        label: label.toString(),
+        position: latLng,
+        description : description,
+        map: map,
+        draggable: true
+      });
+      bounds.extend(marker.getPosition());
+      google.maps.event.addListener(marker, "click", function(evt) {
+        //infowindow.setContent("coord:" + this.getPosition().toUrlValue(6));
+        var contentString = '<div id="content">'+
+        '<div id="siteNotice">'+
+        '</div>'+
+        '<div id="bodyContent">'+
+        '<p> Location : <b>' + description +'</b>' +
+        '<p> Customer : <b>' + customer +'</b>' +
+        '</div>'+
+        '</div>';
+        infowindow.setContent(contentString);
+        //infowindow.setContent(label);
+        infowindow.open(map, this);
+      });
     }
   }
-  
-  ngOnInit() {
-  }
-
 }
 
 interface marker {
