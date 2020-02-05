@@ -28,6 +28,9 @@ export class CmapComponent implements OnInit {
   arrayBuffer: any;
   file: File;
   coordinates: coordinate[] = [];
+  cors: any[] = [];
+  counter: number = 0;
+  orgID : any;
 
   constructor(private _markerService: MarkerService) {
     this.markers = this._markerService.getMarkers();
@@ -60,23 +63,63 @@ export class CmapComponent implements OnInit {
     for (let index = 1; index < elements.length; index++) {
       const element = elements[index];
       console.log(element);
-      
+      this.orgID=elements[1].__EMPTY_1;
       // this.visualizeMarker(element.__EMPTY_9,element.__EMPTY_10);
+      // if (element.__EMPTY_1 == 282100) {
+        if(elements[index].__EMPTY_1 == this.orgID){
+        console.log("hajra");
+        console.log(element.__EMPTY_1);
+        var d = {
+          customer:
+            element.__EMPTY_3 +
+            " - " +
+            element.__EMPTY_4 +
+            " - " +
+            element.__EMPTY_5 +
+            " - " +
+            element.__EMPTY_7 +
+            "  " +
+            element.__EMPTY_8,
+          title: element.__EMPTY_11 + " " + element.__EMPTY_12,
+          description: element.__EMPTY_14 + ", " + element.__EMPTY_15,
+          lat: element.__EMPTY_9,
+          lng: element.__EMPTY_10,
+          label: index
+        };
 
-      var d = {
-        customer: element.__EMPTY_3 + ", " + element.__EMPTY_4 + " " + element.__EMPTY_5 + ", " + element.__EMPTY_7 + ", " + element.__EMPTY_8 ,
-        title: element.__EMPTY_11 + " " + element.__EMPTY_12,
-        description: element.__EMPTY_14 + ", " + element.__EMPTY_15,
-        lat: element.__EMPTY_9,
-        lng: element.__EMPTY_10,
-        label:index
-      };
+        this.coordinates.push(d);
+        console.log("moje");
+        console.log(this.coordinates);
+      } else {
+         ++this.counter;
+        console.log(element.__EMPTY_1);
+        var s = {
+          customer:
+            element.__EMPTY_3 +
+            " - " +
+            element.__EMPTY_4 +
+            " - " +
+            //Number.parseFloat(element.__EMPTY_5).toFixed(2)
+            element.__EMPTY_5
+            +
+            " - " +
+            element.__EMPTY_7 +
+            "  " +
+            element.__EMPTY_8,
+          title: element.__EMPTY_11 + " " + element.__EMPTY_12,
+          description: element.__EMPTY_14 + ", " + element.__EMPTY_15,
+          lat: element.__EMPTY_9,
+          lng: element.__EMPTY_10,
+          label: this.counter
+        };
 
-      this.coordinates.push(d);
-      console.log("moje");
-      console.log(this.coordinates);
+        this.cors.push(s);
+        console.log("moje 223");
+        console.log(this.cors);
+      }
     }
-    this.sve(this.coordinates);
+
+    this.sve(this.coordinates, this.cors);
   }
 
   visualizeMarker(lat, lng) {
@@ -91,7 +134,11 @@ export class CmapComponent implements OnInit {
     this._markerService.addMarker(newMarker);
   }
 
-  sve(markers) {
+  sve(markers, markers2) {
+    console.log("ovo je uslo:");
+    console.log(markers);
+    console.log("i ovo :");
+    console.log(markers2);
     var map = null;
     var infowindow = new google.maps.InfoWindow();
     var bounds = new google.maps.LatLngBounds();
@@ -127,17 +174,17 @@ export class CmapComponent implements OnInit {
           parseFloat(markers[i].lng)
         );
 
-        var name=markers[i + 1].title + ' - ' + markers[i + 1].description;
-        var customer = markers[i + 1].customer;
-        createMarker(src,markers[i].label,name,customer);
+        var name = markers[i].title + " - " + markers[i].description;
+        var customer = markers[i].customer;
+        createMarker(src, markers[i].label, name, customer,false);
 
         var des = new google.maps.LatLng(
           parseFloat(markers[i + 1].lat),
           parseFloat(markers[i + 1].lng)
         );
-        var name2=markers[i + 1].title + ' - ' + markers[i + 1].description;
+        var name2 = markers[i + 1].title + " - " + markers[i + 1].description;
         var customer2 = markers[i + 1].customer;
-        createMarker(des,markers[i + 1].label, name2, customer2);
+        createMarker(des, markers[i + 1].label, name2, customer2,false);
         //  poly.setPath(path);
         service.route(
           {
@@ -150,9 +197,9 @@ export class CmapComponent implements OnInit {
               var path = new google.maps.MVCArray();
               var poly = new google.maps.Polyline({
                 map: map,
-                 strokeColor: "#F3443C",
-                 strokeOpacity: 1.0,
-                 strokeWeight: 2,
+                strokeColor: "#F3443C",
+                strokeOpacity: 1.0,
+                strokeWeight: 2
               });
               for (
                 var i = 0, len = result.routes[0].overview_path.length;
@@ -169,27 +216,117 @@ export class CmapComponent implements OnInit {
       }
     }
 
-    function createMarker(latLng,label,description,customer) {
-      console.log('hej ana ana')
-      console.log(description)
-      var marker = new google.maps.Marker({
+    for (var i = 0; i < markers2.length; i++) {
+      if (i + 1 < markers2.length) {
+        var src = new google.maps.LatLng(
+          parseFloat(markers2[i].lat),
+          parseFloat(markers2[i].lng)
+        );
+
+        var name = markers2[i].title + " - " + markers2[i].description;
+        var customer = markers2[i].customer;
+        createMarker(src, markers2[i].label, name, customer,true);
+
+        var des = new google.maps.LatLng(
+          parseFloat(markers2[i + 1].lat),
+          parseFloat(markers2[i + 1].lng)
+        );
+        var name2 = markers2[i + 1].title + " - " + markers2[i + 1].description;
+        var customer2 = markers2[i + 1].customer;
+        createMarker(des, markers2[i + 1].label, name2, customer2,true);
+        //  poly.setPath(path);
+        service.route(
+          {
+            origin: src,
+            destination: des,
+            travelMode: google.maps.DirectionsTravelMode.DRIVING
+          },
+          function(result, status) {
+            if (status == google.maps.DirectionsStatus.OK) {
+              var path = new google.maps.MVCArray();
+              var poly = new google.maps.Polyline({
+                map: map,
+                strokeColor: "#0000FF",
+                strokeOpacity: 1.0,
+                strokeWeight: 2
+              });
+              for (
+                var i = 0, len = result.routes[0].overview_path.length;
+                i < len;
+                i++
+              ) {
+                path.push(result.routes[0].overview_path[i]);
+              }
+              poly.setPath(path);
+              map.fitBounds(bounds);
+            }
+          }
+        );
+      }
+    }
+
+    function createMarker(latLng, label, description, customer,color) {
+      var pinIcon = new google.maps.MarkerImage(
+        "http://maps.google.com/mapfiles/ms/icons/blue.png",
+      //  "http://maps.gstatic.com/mapfiles/markers2/boost-marker-mapview.png",
+      
+        null, /* size is determined at runtime */
+        null, /* origin is 0,0 */
+        null, /* anchor is bottom center of the scaled image */
+        new google.maps.Size(47,43)
+    );
+
+    var pinIcon2 = new google.maps.MarkerImage(
+      "http://maps.google.com/mapfiles/ms/icons/red.png",
+    //  "http://maps.gstatic.com/mapfiles/markers2/boost-marker-mapview.png",
+    
+      null, /* size is determined at runtime */
+      null, /* origin is 0,0 */
+      null, /* anchor is bottom center of the scaled image */
+      new google.maps.Size(47,43)
+  );
+      console.log("hej ana ana");
+      console.log(description);
+      if(color){
+         var marker = new google.maps.Marker({
         label: label.toString(),
         position: latLng,
-        description : description,
+        description: description,
         map: map,
-        draggable: true
+        draggable: false,
+        icon: pinIcon
+        // {
+        //   url: "http://maps.google.com/mapfiles/ms/icons/blue.png"
+         
+        // }
       });
+      }else{
+        var marker = new google.maps.Marker({
+          label: label.toString(),
+          position: latLng,
+          description: description,
+          map: map,
+          draggable: false,
+          icon: pinIcon2
+        });
+      }
+     
       bounds.extend(marker.getPosition());
       google.maps.event.addListener(marker, "click", function(evt) {
         //infowindow.setContent("coord:" + this.getPosition().toUrlValue(6));
-        var contentString = '<div id="content">'+
-        '<div id="siteNotice">'+
-        '</div>'+
-        '<div id="bodyContent">'+
-        '<p> Location : <b>' + description +'</b>' +
-        '<p> Customer : <b>' + customer +'</b>' +
-        '</div>'+
-        '</div>';
+        var contentString =
+          '<div id="content">' +
+          '<div id="siteNotice">' +
+          "</div>" +
+          '<div id="bodyContent">' +
+          "<p> Location : <b>" +
+          description +
+          "</b>" +
+          "<p> Customer : <b>" +
+          customer +
+          "</b>" +
+          "</div>" +
+          "</div>";
         infowindow.setContent(contentString);
         //infowindow.setContent(label);
         infowindow.open(map, this);
