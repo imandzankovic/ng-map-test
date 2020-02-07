@@ -7,10 +7,11 @@ import { FormsModule } from "@angular/forms";
 import { AppComponent } from "./app.component";
 import { RouteComponent } from './route/route.component';
 import { CmapComponent } from './cmap/cmap.component';
+import { MergeComponent } from './merge/merge.component';
 
 
 @NgModule({
-  declarations: [AppComponent, RouteComponent, CmapComponent],
+  declarations: [AppComponent, RouteComponent, CmapComponent, MergeComponent],
   imports: [
     BrowserModule,
     // AgmCoreModule.forRoot({
