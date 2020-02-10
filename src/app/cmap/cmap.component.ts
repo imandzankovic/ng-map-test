@@ -1,4 +1,4 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, ɵConsole } from "@angular/core";
 declare var google: any;
 import * as XLSX from "xlsx";
 import { MarkerService } from "../services/marker.service";
@@ -32,6 +32,7 @@ export class CmapComponent implements OnInit {
   counter: number = 0;
   nCounter: number = 0;
   orgID: any;
+  path: any[] = [];
 
   constructor(private _markerService: MarkerService) {
     this.markers = this._markerService.getMarkers();
@@ -85,7 +86,8 @@ export class CmapComponent implements OnInit {
           description: element.__EMPTY_14 + ", " + element.__EMPTY_15,
           lat: element.__EMPTY_9,
           lng: element.__EMPTY_10,
-          label: index
+          label: index,
+          id: index
         };
 
         this.coordinates.push(d);
@@ -110,7 +112,8 @@ export class CmapComponent implements OnInit {
           description: element.__EMPTY_14 + ", " + element.__EMPTY_15,
           lat: element.__EMPTY_9,
           lng: element.__EMPTY_10,
-          label: this.counter
+          label: this.counter,
+          id: this.counter
         };
 
         this.cors.push(s);
@@ -124,9 +127,11 @@ export class CmapComponent implements OnInit {
 
   displayCoordinates(markers, markers2) {
     let map = null;
+    let newCoordinates = [];
     let c = 0;
     var infowindow = new google.maps.InfoWindow();
     var bounds = new google.maps.LatLngBounds();
+    let path;
 
     var mapOptions = {
       center: new google.maps.LatLng(
@@ -138,6 +143,10 @@ export class CmapComponent implements OnInit {
     };
     var service = new google.maps.DirectionsService();
     map = new google.maps.Map(document.getElementById("map"), mapOptions);
+
+    google.maps.event.addListener(map, "click", function() {
+      console.log("aha");
+    });
 
     let polyOptions = {
       strokeColor: "#008000",
@@ -152,8 +161,9 @@ export class CmapComponent implements OnInit {
     handleMarkers(markers, true);
     handleMarkers(markers2, false);
 
-    function createMarker(latLng, label, description, customer, color) {
+    function createMarker(latLng, label, description, customer, color, id) {
       var org;
+      let changed = false;
       color == "red" ? (org = true) : (org = false);
 
       var pinIcon = new google.maps.MarkerImage(
@@ -167,64 +177,72 @@ export class CmapComponent implements OnInit {
       );
 
       var marker = new google.maps.Marker({
-        label: label.toString(),
+        label: { text: label.toString(), color: "black" },
         position: latLng,
         description: description,
         map: map,
         draggable: false,
         icon: pinIcon
       });
+      marker.id = id;
+      marker.color = color;
 
       bounds.extend(marker.getPosition());
       google.maps.event.addListener(marker, "click", function() {
-        setInfo(description, customer);
+        setInfo(description, customer, marker);
       });
 
       google.maps.event.addListener(marker, "dblclick", function(event) {
-        console.log(c);
-        ++c;
-        handleNewRoute(event, c, org);
+        c++;
+        console.log(newCoordinates);
+
+        console.log(marker.position.lat());
+        console.log(marker.position.lng());
+
+        var newCoordinate = {
+          lat: marker.position.lat(),
+          lng: marker.position.lng()
+        };
+        newCoordinates.push(newCoordinate);
+
+        var label = this.getLabel();
+        label.color = "#32CD32";
+        this.setLabel(label);
+
+        var pinIconNew = new google.maps.MarkerImage(
+          "http://maps.google.com/mapfiles/ms/icons/green.png",
+
+          null /* size is determined at runtime */,
+          null /* origin is 0,0 */,
+          null /* anchor is bottom center of the scaled image */,
+          new google.maps.Size(47, 43)
+        );
+
+        var newMarker = new google.maps.Marker({
+          position: event.latLng,
+          icon: pinIconNew,
+          map: map,
+          label: { text: c.toString(), color: "black", fontSize: "15px" }
+        });
+
+        for (let index = 0; index < newCoordinates.length; index++) {
+          if (index + 1 < newCoordinates.length) {
+            var src = new google.maps.LatLng(
+              parseFloat(newCoordinates[index].lat),
+              parseFloat(newCoordinates[index].lng)
+            );
+
+            var des = new google.maps.LatLng(
+              parseFloat(newCoordinates[index + 1].lat),
+              parseFloat(newCoordinates[index + 1].lng)
+            );
+            draw(src, des);
+          }
+        }
       });
     }
 
-    function handleNewRoute(event, c, org) {
-      let i;
-      org == true ? (i = DeleteMarker(markers)) : (i = DeleteMarker(markers2));
-
-      polyLine.setMap(map);
-
-      var path = polyLine.getPath();
-      path.push(event.latLng);
-
-      var pinIconNew = new google.maps.MarkerImage(
-        "http://maps.google.com/mapfiles/ms/icons/green.png",
-
-        null /* size is determined at runtime */,
-        null /* origin is 0,0 */,
-        null /* anchor is bottom center of the scaled image */,
-        new google.maps.Size(47, 43)
-      );
-
-      var marker = new google.maps.Marker({
-        position: event.latLng,
-        icon: pinIconNew,
-        map: map,
-        label: c.toString()
-      });
-
-      if (org == true) {
-        markers[i].label = "";
-        markers[i] = marker;
-        console.log(markers[i]);
-      } else {
-        markers2[i].label = "";
-        markers2[i] = marker;
-        console.log(markers[i]);
-      }
-
-      map.setCenter(event.latLng);
-    }
-    function setInfo(description, customer) {
+    function setInfo(description, customer, marker) {
       var contentString =
         '<div id="content">' +
         '<div id="siteNotice">' +
@@ -238,9 +256,9 @@ export class CmapComponent implements OnInit {
         "</b>" +
         "</div>" +
         "</div>";
+
       infowindow.setContent(contentString);
-      //infowindow.setContent(label);
-      infowindow.open(map, this);
+      infowindow.open(map, marker);
     }
     function handleMarkers(markers, org) {
       for (var i = 0; i < markers.length; i++) {
@@ -254,8 +272,22 @@ export class CmapComponent implements OnInit {
           var customer = markers[i].customer;
 
           org == true
-            ? createMarker(src, markers[i].label, name, customer, "red")
-            : createMarker(src, markers[i].label, name, customer, "blue");
+            ? createMarker(
+                src,
+                markers[i].label,
+                name,
+                customer,
+                "red",
+                markers[i].id
+              )
+            : createMarker(
+                src,
+                markers[i].label,
+                name,
+                customer,
+                "blue",
+                markers[i].id
+              );
 
           var des = new google.maps.LatLng(
             parseFloat(markers[i + 1].lat),
@@ -265,8 +297,22 @@ export class CmapComponent implements OnInit {
           var customer2 = markers[i + 1].customer;
 
           org == true
-            ? createMarker(des, markers[i + 1].label, name2, customer2, "red")
-            : createMarker(des, markers[i + 1].label, name2, customer2, "blue");
+            ? createMarker(
+                des,
+                markers[i + 1].label,
+                name2,
+                customer2,
+                "red",
+                markers[i + 1].id
+              )
+            : createMarker(
+                des,
+                markers[i + 1].label,
+                name2,
+                customer2,
+                "blue",
+                markers[i + 1].id
+              );
 
           service.route(
             {
@@ -299,39 +345,37 @@ export class CmapComponent implements OnInit {
         }
       }
     }
-    function DeleteMarker(markers) {
-      //Find and remove the marker from the Array
-      for (var i = 0; i < markers.length; i++) {
-        // if (markers[i].id == id) {
-        //Remove the marker from Map
-        var marker = new google.maps.Marker({
-          position: new google.maps.LatLng(markers[i][1], markers[i][2]),
-          map: map
-        });
 
-        markers[i] = marker;
-        markers[i].setMap(null);
+    function draw(src, des) {
+      service.route(
+        {
+          origin: src,
+          destination: des,
+          travelMode: google.maps.DirectionsTravelMode.DRIVING
+        },
+        function(result, status) {
+          if (status == google.maps.DirectionsStatus.OK) {
+            var path = new google.maps.MVCArray();
 
-        //Remove the marker from array.
-        markers.splice(i, 1);
-        return i;
-        // }
-      }
+            var poly = new google.maps.Polyline({
+              map: map,
+              strokeColor: "#32CD32",
+              strokeOpacity: 2.0,
+              strokeWeight: 8
+            });
+            for (
+              var i = 0, len = result.routes[0].overview_path.length;
+              i < len;
+              i++
+            ) {
+              path.push(result.routes[0].overview_path[i]);
+            }
+            poly.setPath(path);
+            map.fitBounds(bounds);
+          }
+        }
+      );
     }
-    // function DeleteMarker(id,markers) {
-    //   //Find and remove the marker from the Array
-    //   for (var i = 0; i < markers.length; i++) {
-    //       if (markers[i].id == id) {
-    //           //Remove the marker from Map
-    //           markers[i].setMap(null);
-
-    //           //Remove the marker from array.
-    //           markers.splice(i, 1);
-    //           return;
-    //       }
-    //   }
-    // }
-    // }
   }
   ngOnInit() {}
 }
