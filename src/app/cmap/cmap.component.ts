@@ -3,6 +3,7 @@ declare var google: any;
 import * as XLSX from "xlsx";
 import { MarkerService } from "../services/marker.service";
 declare var google: any;
+declare var $: any;
 
 @Component({
   selector: "app-cmap",
@@ -29,10 +30,11 @@ export class CmapComponent implements OnInit {
   file: File;
   coordinates: coordinate[] = [];
   cors: any[] = [];
-  counter: number = 0;
+  counter: number = 1;
   nCounter: number = 0;
   orgID: any;
   path: any[] = [];
+  showData: boolean = false;
 
   constructor(private _markerService: MarkerService) {
     this.markers = this._markerService.getMarkers();
@@ -62,76 +64,59 @@ export class CmapComponent implements OnInit {
   }
 
   loopThrough(elements) {
+    
     for (let index = 1; index < elements.length; index++) {
       const element = elements[index];
       console.log(element);
       this.orgID = elements[1].__EMPTY_1;
-      // this.visualizeMarker(element.__EMPTY_9,element.__EMPTY_10);
-      // if (element.__EMPTY_1 == 282100) {
-      if (elements[index].__EMPTY_1 == this.orgID) {
-        console.log("hajra");
-        console.log(element.__EMPTY_1);
-        var d = {
-          customer:
-            element.__EMPTY_3 +
-            " - " +
-            element.__EMPTY_4 +
-            " - " +
-            element.__EMPTY_5 +
-            " - " +
-            element.__EMPTY_7 +
-            "  " +
-            element.__EMPTY_8,
-          title: element.__EMPTY_11 + " " + element.__EMPTY_12,
-          description: element.__EMPTY_14 + ", " + element.__EMPTY_15,
-          lat: element.__EMPTY_9,
-          lng: element.__EMPTY_10,
-          label: index,
-          id: index
-        };
 
-        this.coordinates.push(d);
-        console.log("moje");
-        console.log(this.coordinates);
-      } else {
-        ++this.counter;
-        console.log(element.__EMPTY_1);
-        var s = {
-          customer:
-            element.__EMPTY_3 +
-            " - " +
-            element.__EMPTY_4 +
-            " - " +
-            //Number.parseFloat(element.__EMPTY_5).toFixed(2)
-            element.__EMPTY_5 +
-            " - " +
-            element.__EMPTY_7 +
-            "  " +
-            element.__EMPTY_8,
-          title: element.__EMPTY_11 + " " + element.__EMPTY_12,
-          description: element.__EMPTY_14 + ", " + element.__EMPTY_15,
-          lat: element.__EMPTY_9,
-          lng: element.__EMPTY_10,
-          label: this.counter,
-          id: this.counter
-        };
+      var d = {
+        customer: {
+          tourName: element.__EMPTY_2,
+          time: element.__EMPTY_3,
+          careCode: element.__EMPTY_4,
+          careTime: element.__EMPTY_5,
+          careRevenue: element.__EMPTY_6,
+          custName: element.__EMPTY_7,
+          custFName: element.__EMPTY_8
+        },
 
-        this.cors.push(s);
-        console.log("moje 223");
-        console.log(this.cors);
-      }
+        title: {
+          custStreet: element.__EMPTY_11,
+          custStreetNumber: element.__EMPTY_12
+        },
+        description: {
+          custCity: element.__EMPTY_14,
+          custCountry: element.__EMPTY_15
+        },
+        lat: element.__EMPTY_9,
+        lng: element.__EMPTY_10,
+        label: index,
+        id: index
+      };
+
+      elements[index].__EMPTY_1 == this.orgID
+        ? this.coordinates.push(d)
+        : this.otherOrg(d)
     }
 
     this.displayCoordinates(this.coordinates, this.cors);
   }
 
+  otherOrg(d){
+   var a= this.counter++;
+   console.log(a)
+    d.id=a;
+    d.label=a;
+    this.cors.push(d);
+  }
   displayCoordinates(markers, markers2) {
     let map = null;
     let newCoordinates = [];
     let c = 0;
+    let n = 0;
     var infowindow = new google.maps.InfoWindow();
     var bounds = new google.maps.LatLngBounds();
-    let path;
 
     var mapOptions = {
       center: new google.maps.LatLng(
@@ -143,10 +128,6 @@ export class CmapComponent implements OnInit {
     };
     var service = new google.maps.DirectionsService();
     map = new google.maps.Map(document.getElementById("map"), mapOptions);
-
-    google.maps.event.addListener(map, "click", function() {
-      console.log("aha");
-    });
 
     let polyOptions = {
       strokeColor: "#008000",
@@ -161,9 +142,17 @@ export class CmapComponent implements OnInit {
     handleMarkers(markers, true);
     handleMarkers(markers2, false);
 
-    function createMarker(latLng, label, description, customer, color, id) {
+    function createMarker(
+      latLng,
+      label,
+      customer,
+      color,
+      id,
+      description,
+      title
+    ) {
       var org;
-      let changed = false;
+
       color == "red" ? (org = true) : (org = false);
 
       var pinIcon = new google.maps.MarkerImage(
@@ -180,6 +169,7 @@ export class CmapComponent implements OnInit {
         label: { text: label.toString(), color: "black" },
         position: latLng,
         description: description,
+        customer: customer,
         map: map,
         draggable: false,
         icon: pinIcon
@@ -189,19 +179,19 @@ export class CmapComponent implements OnInit {
 
       bounds.extend(marker.getPosition());
       google.maps.event.addListener(marker, "click", function() {
-        setInfo(description, customer, marker);
+        console.log("jak sam");
+        console.log(marker);
+
+        setInfo(description, customer, title, marker);
       });
 
       google.maps.event.addListener(marker, "dblclick", function(event) {
         c++;
-        console.log(newCoordinates);
-
-        console.log(marker.position.lat());
-        console.log(marker.position.lng());
 
         var newCoordinate = {
           lat: marker.position.lat(),
-          lng: marker.position.lng()
+          lng: marker.position.lng(),
+          customer: marker.customer
         };
         newCoordinates.push(newCoordinate);
 
@@ -227,6 +217,12 @@ export class CmapComponent implements OnInit {
 
         for (let index = 0; index < newCoordinates.length; index++) {
           if (index + 1 < newCoordinates.length) {
+            if (index == 0) {
+              setRouteInfo(newCoordinates[0].customer, index + 1);
+            }
+
+            addNewInfo(newCoordinates[index + 1].customer, c + 1);
+
             var src = new google.maps.LatLng(
               parseFloat(newCoordinates[index].lat),
               parseFloat(newCoordinates[index].lng)
@@ -242,17 +238,34 @@ export class CmapComponent implements OnInit {
       });
     }
 
-    function setInfo(description, customer, marker) {
+    function setInfo(description, customer, title, marker) {
+      console.log(customer);
       var contentString =
         '<div id="content">' +
         '<div id="siteNotice">' +
         "</div>" +
         '<div id="bodyContent">' +
         "<p> Location : <b>" +
-        description +
+        title.custStreet +
+        " " +
+        title.custStreetNumber +
+        " - " +
+        description.custCity +
+        " , " +
+        description.custCountry +
         "</b>" +
         "<p> Customer : <b>" +
-        customer +
+        customer.time +
+        " - " +
+        customer.careCode +
+        " - " +
+        customer.careTime +
+        " - " +
+        customer.careRevenue +
+        " - " +
+        customer.custFName +
+        " " +
+        customer.custName +
         "</b>" +
         "</div>" +
         "</div>";
@@ -268,50 +281,49 @@ export class CmapComponent implements OnInit {
             parseFloat(markers[i].lng)
           );
 
-          var name = markers[i].title + " - " + markers[i].description;
-          var customer = markers[i].customer;
-
           org == true
             ? createMarker(
                 src,
                 markers[i].label,
-                name,
-                customer,
+                markers[i].customer,
                 "red",
-                markers[i].id
+                markers[i].id,
+                markers[i].description,
+                markers[i].title
               )
             : createMarker(
                 src,
                 markers[i].label,
-                name,
-                customer,
+                markers[i].customer,
                 "blue",
-                markers[i].id
+                markers[i].id,
+                markers[i].description,
+                markers[i].title
               );
 
           var des = new google.maps.LatLng(
             parseFloat(markers[i + 1].lat),
             parseFloat(markers[i + 1].lng)
           );
-          var name2 = markers[i + 1].title + " - " + markers[i + 1].description;
-          var customer2 = markers[i + 1].customer;
 
           org == true
             ? createMarker(
                 des,
                 markers[i + 1].label,
-                name2,
-                customer2,
+                markers[i + 1].customer,
                 "red",
-                markers[i + 1].id
+                markers[i + 1].id,
+                markers[i + 1].description,
+                markers[i + 1].title
               )
             : createMarker(
                 des,
                 markers[i + 1].label,
-                name2,
-                customer2,
+                markers[i + 1].customer,
                 "blue",
-                markers[i + 1].id
+                markers[i + 1].id,
+                markers[i + 1].description,
+                markers[i + 1].title
               );
 
           service.route(
@@ -375,6 +387,89 @@ export class CmapComponent implements OnInit {
           }
         }
       );
+    }
+
+    function setRouteInfo(customer, index) {
+      $("#dvPassport").show();
+      console.log(customer.time);
+      console.log(customer.time.slice(0, 10));
+      console.log(customer.time.slice(13));
+      console.log(customer.careTime);
+      // var day=30;
+      var minutes = 45;
+      $("#staticTourname").val(customer.tourName);
+      $("#staticStartTime").val(
+        customer.time.slice(13) + " " + customer.time.slice(0, 10)
+      );
+      $("#staticCustomerOverhead").val(minutes);
+      $("#staticClient").val(
+        index +
+          "     " +
+          customer.custFName +
+          " " +
+          customer.custName +
+          "  " +
+          customer.time.slice(13) +
+          "  " +
+          customer.careTime
+      );
+      $("#staticCareCode").val(customer.careCode);
+    }
+
+    function addNewInfo(customer, index) {
+      
+      n++;
+      console.log("titanik");
+      console.log(n)
+      var staticClient =
+        index +
+        "     " +
+        customer.custFName +
+        " " +
+        customer.custName +
+        "  " +
+        customer.time.slice(13) +
+        "  " +
+        customer.careTime;
+      // var someID=(Math.floor(Math.random() * (+20 - +5)) + +5).toString();
+      var someID = customer.custFName;
+
+      var content =
+        '<input id="' +
+        someID +
+        '" value="' +
+        staticClient +
+        '" class="form-control-plaintext">';
+       
+        var inputs = $("#newRow :input");
+       
+        // if(n==1){
+           $("#newRow").append(
+        content
+      );
+        // }
+     
+
+     
+      // var inputs=$("div > div", "#newRow");
+      for (let index = 0; index < inputs.length; index++) {
+        console.log(inputs[index])
+        if (index + 1 < inputs.length) {
+          console.log(inputs[index]);
+          // if(inputs[index].value!=content) {
+          //   $("#newRow").append(
+          //     content
+          //   );
+          // }
+          if (inputs[index].id == inputs[index + 1].id ||inputs[index].value == inputs[index + 1].value || inputs[index].value==content ) {
+            console.log("kako treba");
+            inputs.splice(index, 1);
+
+            console.log('nakon toga')
+            console.log(inputs)
+          }
+        }
+      }
     }
   }
   ngOnInit() {}
