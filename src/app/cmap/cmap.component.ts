@@ -403,7 +403,7 @@ export class CmapComponent implements OnInit {
       );
       $("#staticCustomerOverhead").val(minutes);
       $("#staticClient").val(
-        index +
+        // index +
           "     " +
           customer.custFName +
           " " +
@@ -422,7 +422,7 @@ export class CmapComponent implements OnInit {
       console.log("titanik");
       console.log(n)
       var staticClient =
-        index +
+        // index +
         "     " +
         customer.custFName +
         " " +
@@ -431,7 +431,7 @@ export class CmapComponent implements OnInit {
         customer.time.slice(13) +
         "  " +
         customer.careTime;
-      // var someID=(Math.floor(Math.random() * (+20 - +5)) + +5).toString();
+
       var someID = customer.custFName;
 
       var content =
@@ -442,34 +442,22 @@ export class CmapComponent implements OnInit {
         '" class="form-control-plaintext">';
        
         var inputs = $("#newRow :input");
-       
-        // if(n==1){
+        
+        var seen ={};
+        $("#newRow :input").each(function(){
+          var va=$(this).val();
+          console.log(va)
+          if(seen[va]){
+            console.log('uslo jednom')
+             $(this).remove();
+          }
+         
+          else 
+          seen[va]=true;
+        });
            $("#newRow").append(
         content
       );
-        // }
-     
-
-     
-      // var inputs=$("div > div", "#newRow");
-      for (let index = 0; index < inputs.length; index++) {
-        console.log(inputs[index])
-        if (index + 1 < inputs.length) {
-          console.log(inputs[index]);
-          // if(inputs[index].value!=content) {
-          //   $("#newRow").append(
-          //     content
-          //   );
-          // }
-          if (inputs[index].id == inputs[index + 1].id ||inputs[index].value == inputs[index + 1].value || inputs[index].value==content ) {
-            console.log("kako treba");
-            inputs.splice(index, 1);
-
-            console.log('nakon toga')
-            console.log(inputs)
-          }
-        }
-      }
     }
   }
   ngOnInit() {}
