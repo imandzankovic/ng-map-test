@@ -114,9 +114,11 @@ export class CmapComponent implements OnInit {
     let map = null;
     let newCoordinates = [];
     let c = 0;
-    let n = 0;
+    let totalCareTime = [];
     var infowindow = new google.maps.InfoWindow();
     var bounds = new google.maps.LatLngBounds();
+    // let cIndex : any = 0;
+    let list=[];
 
     var mapOptions = {
       center: new google.maps.LatLng(
@@ -179,20 +181,32 @@ export class CmapComponent implements OnInit {
 
       bounds.extend(marker.getPosition());
       google.maps.event.addListener(marker, "click", function() {
-        console.log("jak sam");
-        console.log(marker);
-
         setInfo(description, customer, title, marker);
       });
 
       google.maps.event.addListener(marker, "dblclick", function(event) {
         c++;
+       list.push(marker.customer.careTime.slice(0,2))
+       console.log('muss ich leben')
+       console.log(list) 
 
         var newCoordinate = {
           lat: marker.position.lat(),
           lng: marker.position.lng(),
           customer: marker.customer
         };
+  
+        let cIndex : any = 0;
+        for (let index = 0; index < list.length; index++) {
+          cIndex+=parseInt(list[index]);
+          console.log('ajmo')
+          console.log(cIndex)
+          
+        }
+        $("#staticCareTime").val(
+          cIndex + ' minutes'
+          //list
+        );
         newCoordinates.push(newCoordinate);
 
         var label = this.getLabel();
@@ -216,11 +230,14 @@ export class CmapComponent implements OnInit {
         });
 
         for (let index = 0; index < newCoordinates.length; index++) {
+    
           if (index + 1 < newCoordinates.length) {
+       
             if (index == 0) {
               setRouteInfo(newCoordinates[0].customer, index + 1);
             }
 
+            
             addNewInfo(newCoordinates[index + 1].customer, c + 1);
 
             var src = new google.maps.LatLng(
@@ -233,6 +250,7 @@ export class CmapComponent implements OnInit {
               parseFloat(newCoordinates[index + 1].lng)
             );
             draw(src, des);
+            addTotalCareTime();
           }
         }
       });
@@ -416,11 +434,22 @@ export class CmapComponent implements OnInit {
       $("#staticCareCode").val(customer.careCode);
     }
 
+    function addTotalCareTime(){
+      // $("#newRow :input").each(function(){
+      // console.log('de ga sad')
+      // totalCareTime+= $(this).val();
+      // });
+
+      // $("#staticCareTime").val(
+      //   totalCareTime
+      // );
+    }
     function addNewInfo(customer, index) {
-      
-      n++;
+     // var s={ctime:customer.careTime,id:cIndex}
+     var s;
+      console.log(totalCareTime);
       console.log("titanik");
-      console.log(n)
+     
       var staticClient =
         // index +
         "     " +
@@ -458,7 +487,14 @@ export class CmapComponent implements OnInit {
            $("#newRow").append(
         content
       );
+
+      console.log('a ja a ja')
+      console.log($("#newRow :input"))
+  totalCareTime=$("#newRow :input")
+ 
     }
+ 
+
   }
   ngOnInit() {}
 }
