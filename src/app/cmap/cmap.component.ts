@@ -35,6 +35,7 @@ export class CmapComponent implements OnInit {
   orgID: any;
   path: any[] = [];
   showData: boolean = false;
+ times=[];
 
   constructor(private _markerService: MarkerService) {
     this.markers = this._markerService.getMarkers();
@@ -114,7 +115,7 @@ export class CmapComponent implements OnInit {
     let map = null;
     let newCoordinates = [];
     let c = 0;
-    let totalCareTime = [];
+    let dTime=0;
     var infowindow = new google.maps.InfoWindow();
     var bounds = new google.maps.LatLngBounds();
     // let cIndex : any = 0;
@@ -186,6 +187,7 @@ export class CmapComponent implements OnInit {
 
       google.maps.event.addListener(marker, "dblclick", function(event) {
         c++;
+       let times=[];
        list.push(marker.customer.careTime.slice(0,2))
        console.log('muss ich leben')
        console.log(list) 
@@ -197,6 +199,7 @@ export class CmapComponent implements OnInit {
         };
   
         let cIndex : any = 0;
+       
         for (let index = 0; index < list.length; index++) {
           cIndex+=parseInt(list[index]);
           console.log('ajmo')
@@ -205,7 +208,6 @@ export class CmapComponent implements OnInit {
         }
         $("#staticCareTime").val(
           cIndex + ' minutes'
-          //list
         );
         newCoordinates.push(newCoordinate);
 
@@ -239,7 +241,7 @@ export class CmapComponent implements OnInit {
 
             
             addNewInfo(newCoordinates[index + 1].customer, c + 1);
-
+          
             var src = new google.maps.LatLng(
               parseFloat(newCoordinates[index].lat),
               parseFloat(newCoordinates[index].lng)
@@ -249,8 +251,9 @@ export class CmapComponent implements OnInit {
               parseFloat(newCoordinates[index + 1].lat),
               parseFloat(newCoordinates[index + 1].lng)
             );
-            draw(src, des);
-            addTotalCareTime();
+          
+           draw(src, des,times);
+
           }
         }
       });
@@ -376,7 +379,9 @@ export class CmapComponent implements OnInit {
       }
     }
 
-    function draw(src, des) {
+    
+    function draw(src, des,times) {
+       
       service.route(
         {
           origin: src,
@@ -385,6 +390,17 @@ export class CmapComponent implements OnInit {
         },
         function(result, status) {
           if (status == google.maps.DirectionsStatus.OK) {
+            console.log('zeit')
+              console.log( result.routes[0].legs[0].duration.text );
+              times.push( (result.routes[0].legs[0].duration.text).slice(0,2) )
+
+              var dIndex : any = 0;
+              for (let j = 0; j < times.length; j++) {
+          
+                dIndex+=(parseInt(times[j]));
+     
+              }
+
             var path = new google.maps.MVCArray();
 
             var poly = new google.maps.Polyline({
@@ -398,13 +414,21 @@ export class CmapComponent implements OnInit {
               i < len;
               i++
             ) {
+           
               path.push(result.routes[0].overview_path[i]);
             }
             poly.setPath(path);
             map.fitBounds(bounds);
+
+            $("#staticDrivingTime").val(dIndex + ' minutes');
+            var s=parseInt(parseInt($("#staticCareTime").val().slice(0,2)) + dIndex)
+            $("#staticExpectedTTime").val(
+             s + ' minutes'
+            );
           }
         }
       );
+ 
     }
 
     function setRouteInfo(customer, index) {
@@ -434,21 +458,8 @@ export class CmapComponent implements OnInit {
       $("#staticCareCode").val(customer.careCode);
     }
 
-    function addTotalCareTime(){
-      // $("#newRow :input").each(function(){
-      // console.log('de ga sad')
-      // totalCareTime+= $(this).val();
-      // });
 
-      // $("#staticCareTime").val(
-      //   totalCareTime
-      // );
-    }
     function addNewInfo(customer, index) {
-     // var s={ctime:customer.careTime,id:cIndex}
-     var s;
-      console.log(totalCareTime);
-      console.log("titanik");
      
       var staticClient =
         // index +
@@ -488,9 +499,7 @@ export class CmapComponent implements OnInit {
         content
       );
 
-      console.log('a ja a ja')
-      console.log($("#newRow :input"))
-  totalCareTime=$("#newRow :input")
+
  
     }
  
