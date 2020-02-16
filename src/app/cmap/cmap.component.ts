@@ -207,7 +207,7 @@ export class CmapComponent implements OnInit {
           
         }
         $("#staticCareTime").val(
-          cIndex + ' minutes'
+          timeConvert(cIndex)
         );
         newCoordinates.push(newCoordinate);
 
@@ -231,6 +231,9 @@ export class CmapComponent implements OnInit {
           label: { text: c.toString(), color: "black", fontSize: "15px" }
         });
 
+        google.maps.event.addListener(newMarker, "click", function() {
+          setInfo(description, customer, title, marker);
+        });
         for (let index = 0; index < newCoordinates.length; index++) {
     
           if (index + 1 < newCoordinates.length) {
@@ -294,6 +297,14 @@ export class CmapComponent implements OnInit {
       infowindow.setContent(contentString);
       infowindow.open(map, marker);
     }
+    function timeConvert(n) {
+      var num = n;
+      var hours = (num / 60);
+      var rhours = Math.floor(hours);
+      var minutes = (hours - rhours) * 60;
+      var rminutes = Math.round(minutes);
+      return num + " minutes = " + rhours + " hour(s) and " + rminutes + " minute(s).";
+      }
     function handleMarkers(markers, org) {
       for (var i = 0; i < markers.length; i++) {
         if (i + 1 < markers.length) {
@@ -420,10 +431,10 @@ export class CmapComponent implements OnInit {
             poly.setPath(path);
             map.fitBounds(bounds);
 
-            $("#staticDrivingTime").val(dIndex + ' minutes');
+            $("#staticDrivingTime").val(timeConvert(dIndex));
             var s=parseInt(parseInt($("#staticCareTime").val().slice(0,2)) + dIndex)
             $("#staticExpectedTTime").val(
-             s + ' minutes'
+            timeConvert(s)
             );
           }
         }
